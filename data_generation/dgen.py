@@ -24,6 +24,25 @@ class DataGenerator:
         self.e_scale = e_scale
         self.random_state = random_state
 
+    def _compute_error(self):
+        """
+        return: array of errors for the model
+        """
+        if self.random_state is not None:
+            np.random.seed(self.random_state)
+        if self.error_distribution == 'student_t':
+            error = np.random.standard_t(self.e_df, size=self.n_obs)
+        elif self.error_distribution == 'cauchy':
+            error = cauchy.rvs(loc=self.e_loc, scale=self.e_scale, size=self.n_obs)
+        elif self.error_distribution == 'chi_square':
+            error = np.random.chisquare(df=self.e_df, size=self.n_obs)
+        elif self.error_distribution == 'normal':
+            error = np.random.normal(loc=self.e_loc, scale=self.e_scale, size=self.n_obs)
+        else:
+            error = None
+            logger.error(f'error_distribution provided:{self.error_distribution}')
+        return error
+
 
 # EQUAL GROUP SIZE DATA GENERATION ####################################################################################
 
@@ -50,25 +69,6 @@ class EqualGroupSize(DataGenerator):
         self.non_zero_groups = non_zero_groups
         self.non_zero_coef = non_zero_coef
         self.n_var = self.num_groups * self.group_size
-
-    def __compute_error(self):
-        """
-        return: array of errors for the model
-        """
-        if self.random_state is not None:
-            np.random.seed(self.random_state)
-        if self.error_distribution == 'student_t':
-            error = np.random.standard_t(self.e_df, size=self.n_obs)
-        elif self.error_distribution == 'cauchy':
-            error = cauchy.rvs(loc=self.e_loc, scale=self.e_scale, size=self.n_obs)
-        elif self.error_distribution == 'chi_square':
-            error = np.random.chisquare(df=self.e_df, size=self.n_obs)
-        elif self.error_distribution == 'normal':
-            error = np.random.normal(loc=self.e_loc, scale=self.e_scale, size=self.n_obs)
-        else:
-            error = None
-            logger.error(f'error_distribution provided:{self.error_distribution}')
-        return error
 
     def __compute_predictors(self, group_levels):
         """
@@ -100,7 +100,7 @@ class EqualGroupSize(DataGenerator):
         group_index = np.repeat(group_levels, self.group_size)
         x = self.__compute_predictors(group_levels)
         betas = self.__compute_betas()
-        error = self.__compute_error()
+        error = self._compute_error()
         y = np.dot(x, betas) + error
         data = dict(x=x, y=y, true_beta=betas, group_index=group_index)
         logger.debug('Function finished without errors')
@@ -134,25 +134,6 @@ class UnequalGroupSize(DataGenerator):
         if len(tuple_number_of_groups) != len(tuple_group_size):
             raise ValueError(f'All the tuples must have the same length')
         self.n_var = np.sum(np.asarray(tuple_group_size) * np.asarray(tuple_number_of_groups))
-
-    def __compute_error(self):
-        """
-        return: array of errors for the model
-        """
-        if self.random_state is not None:
-            np.random.seed(self.random_state)
-        if self.error_distribution == 'student_t':
-            error = np.random.standard_t(self.e_df, size=self.n_obs)
-        elif self.error_distribution == 'cauchy':
-            error = cauchy.rvs(loc=self.e_loc, scale=self.e_scale, size=self.n_obs)
-        elif self.error_distribution == 'chi_square':
-            error = np.random.chisquare(df=self.e_df, size=self.n_obs)
-        elif self.error_distribution == 'normal':
-            error = np.random.normal(loc=self.e_loc, scale=self.e_scale, size=self.n_obs)
-        else:
-            error = None
-            logger.error(f'error_distribution provided:{self.error_distribution}')
-        return error
 
     def __one_step_compute_betas(self, n_var, group_size, non_zero_groups, non_zero_coef):
         """
@@ -196,7 +177,7 @@ class UnequalGroupSize(DataGenerator):
         betas = self.__compute_betas()
         group_index = np.repeat(group_levels, group_sizes)
         x = self.__compute_predictors(group_levels, group_sizes)
-        error = self.__compute_error()
+        error = self._compute_error()
         y = np.dot(x, betas) + error
         data = dict(x=x, y=y, true_beta=betas, group_index=group_index)
         logger.debug('Function finished without errors')
