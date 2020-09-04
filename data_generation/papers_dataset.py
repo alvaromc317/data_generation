@@ -6,8 +6,10 @@ logger = logging.getLogger(__name__)
 
 
 class PaperDataGenerator:
-    def __init__(self, n_obs=100, n_var=40, noise_group=True, random_state=None, ro=0.2, group_size=10,
-                 error_type='CHI4', beta_type='int'):
+    def __init__(self, data_function_name='enet', n_obs=100, n_var=40, noise_group=True, random_state=None, ro=0.2,
+                 group_size=10, error_type='CHI4', beta_type='int'):
+        self.data_function_name = data_function_name
+        self.valid_data_function_names = ['enet', 'hierarchical']
         self.n_obs = n_obs
         self.n_var = n_var
         self.noise_group = noise_group
@@ -17,7 +19,7 @@ class PaperDataGenerator:
         self.error_type = error_type
         self.beta_type = beta_type
 
-    def dg_enet(self):
+    def _enet(self):
         """
         Regularization_and_variable_selection_via_elastic_net__hastie__zou__2015
         Example 4
@@ -48,7 +50,7 @@ class PaperDataGenerator:
         logger.debug('Function finished without errors')
         return data
 
-    def dg_hierarchical(self):
+    def _hierarchical(self):
         """
         Sparse_group_variable_selection_based_on_quantile_hierarchical_lasso__zhao__zhang__liu__2014
         Example 2
@@ -88,6 +90,18 @@ class PaperDataGenerator:
         y = np.dot(x, betas) + error
         data = dict(x=x, y=y, true_beta=betas, index=group_index)
         logger.debug('Function finished without errors')
+        return data
+
+    def __get_data_function_name(self):
+        s = '_' + self.data_function_name
+        return s
+
+    def data_generation(self):
+        if self.data_function_name not in self.valid_data_function_names:
+            s = f'Invalid data generation function. Value provided:{self.data_function_name}.\nValid values:{self.valid_data_function_names}'
+            logging.error(s)
+            raise ValueError(s)
+        data = getattr(self, self.__get_data_function_name())()
         return data
 
 # SIGNAL TO NOISE COMPUTATION ##########################################################################################

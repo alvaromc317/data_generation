@@ -20,10 +20,15 @@ def equal_array(array0, array1, tol=1e-6):
 if __name__ == '__main__':
     # Elastic net paper datasets
     logging.info('Starting elastic net datasets generation')
-    enet_data = dgen.PaperDataGenerator().dg_enet()
-    enet_data1 = dgen.PaperDataGenerator(n_obs=200, n_var=100, noise_group=False).dg_enet()
-    x1, y1, b1, g1 = dgen.PaperDataGenerator(n_obs=300, n_var=200, noise_group=False, random_state=1).dg_enet().values()
-    x2, y2, b2, g2 = dgen.PaperDataGenerator(n_obs=300, n_var=200, noise_group=False, random_state=1).dg_enet().values()
+    enet_data = dgen.PaperDataGenerator(data_function_name='enet').data_generation()
+    enet_data1 = dgen.PaperDataGenerator(
+        data_function_name='enet', n_obs=200, n_var=100, noise_group=False).data_generation()
+
+    x1, y1, b1, g1 = dgen.PaperDataGenerator(data_function_name='enet', n_obs=300, n_var=200, noise_group=False,
+                                             random_state=1).data_generation().values()
+
+    x2, y2, b2, g2 = dgen.PaperDataGenerator(data_function_name='enet', n_obs=300, n_var=200, noise_group=False,
+                                             random_state=1).data_generation().values()
     equal_array(x1, x2)
     equal_array(y1, y2)
     equal_array(b1, b2)
@@ -31,7 +36,7 @@ if __name__ == '__main__':
 
     # Hierarchical dataset
     logging.info('Hierarchical lasso datasets generation')
-    hierarchical = dgen.PaperDataGenerator().dg_hierarchical()
+    hierarchical = dgen.PaperDataGenerator(data_function_name='hierarchical').data_generation()
 
     # Equal group sizes generation
     logging.info('Equal group sizes datasets generation')
