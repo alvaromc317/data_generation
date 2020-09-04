@@ -1,9 +1,9 @@
 import logging
-
+import sys
 import numpy as np
 from scipy.stats import cauchy
 
-logger = logging.getLogger(__name__)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class DataGenerator:
@@ -40,7 +40,7 @@ class DataGenerator:
             error = np.random.normal(loc=self.e_loc, scale=self.e_scale, size=self.n_obs)
         else:
             error = None
-            logger.error(f'error_distribution provided:{self.error_distribution}')
+            logging.error(f'error_distribution provided:{self.error_distribution}')
         return error
 
 
@@ -75,6 +75,8 @@ class EqualGroupSize(DataGenerator):
         :param group_levels: An array indicating the group index levels
         :return: matrix of predictors x
         """
+        if self.random_state is not None:
+            np.random.seed(self.random_state)
         s = np.zeros((self.n_var, self.n_var))
         for level in group_levels:
             s[(level - 1) * self.group_size:level * self.group_size,
@@ -103,7 +105,7 @@ class EqualGroupSize(DataGenerator):
         error = self._compute_error()
         y = np.dot(x, betas) + error
         data = dict(x=x, y=y, true_beta=betas, group_index=group_index)
-        logger.debug('Function finished without errors')
+        logging.debug('Function finished without errors')
         return data
 
 # UNEQUAL GROUP SIZE DATA GENERATION ###################################################################################
@@ -159,6 +161,8 @@ class UnequalGroupSize(DataGenerator):
         return betas
 
     def __compute_predictors(self, group_levels, group_sizes):
+        if self.random_state is not None:
+            np.random.seed(self.random_state)
         s = np.zeros((self.n_var, self.n_var))
         inf_lim = 0
         sup_lim = 0
@@ -180,5 +184,7 @@ class UnequalGroupSize(DataGenerator):
         error = self._compute_error()
         y = np.dot(x, betas) + error
         data = dict(x=x, y=y, true_beta=betas, group_index=group_index)
-        logger.debug('Function finished without errors')
+        logging.debug('Function finished without errors')
         return data
+
+
