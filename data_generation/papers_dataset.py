@@ -92,7 +92,7 @@ class PaperDataGenerator:
         logger.debug('Function finished without errors')
         return data
 
-    def __get_data_function_name(self):
+    def _get_data_function_name(self):
         s = '_' + self.data_function_name
         return s
 
@@ -102,7 +102,7 @@ class PaperDataGenerator:
                 f'Valid values:{self.valid_data_function_names}'
             logging.error(s)
             raise ValueError(s)
-        data = getattr(self, self.__get_data_function_name())()
+        data = getattr(self, self._get_data_function_name())()
         return data
 
 # SIGNAL TO NOISE COMPUTATION ##########################################################################################

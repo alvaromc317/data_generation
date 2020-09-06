@@ -70,7 +70,7 @@ class EqualGroupSize(DataGenerator):
         self.non_zero_coef = non_zero_coef
         self.n_var = None
 
-    def __compute_predictors(self, group_levels):
+    def _compute_predictors(self, group_levels):
         """
         :param group_levels: An array indicating the group index levels
         :return: matrix of predictors x
@@ -86,7 +86,7 @@ class EqualGroupSize(DataGenerator):
         x = np.random.multivariate_normal(np.repeat(0, self.n_var), s, self.n_obs)
         return x
 
-    def __compute_betas(self):
+    def _compute_betas(self):
         """
         :return: array of beta coefficients
         """
@@ -101,8 +101,8 @@ class EqualGroupSize(DataGenerator):
         self.n_var = self.num_groups * self.group_size
         group_levels = np.arange(1, (self.num_groups + 1), 1)
         group_index = np.repeat(group_levels, self.group_size)
-        x = self.__compute_predictors(group_levels)
-        betas = self.__compute_betas()
+        x = self._compute_predictors(group_levels)
+        betas = self._compute_betas()
         error = self._compute_error()
         y = np.dot(x, betas) + error
         data = dict(x=x, y=y, true_beta=betas, group_index=group_index)
@@ -138,7 +138,7 @@ class UnequalGroupSize(DataGenerator):
             raise ValueError(f'All the tuples must have the same length')
         self.n_var = None
 
-    def __one_step_compute_betas(self, n_var, group_size, non_zero_groups, non_zero_coef):
+    def _one_step_compute_betas(self, n_var, group_size, non_zero_groups, non_zero_coef):
         """
         :return: array of beta coefficients
         """
@@ -149,19 +149,19 @@ class UnequalGroupSize(DataGenerator):
                 np.arange(1, non_zero_coef + 1, 1)
         return betas
 
-    def __compute_betas(self):
+    def _compute_betas(self):
         # n_var is an array with the number of variables per group structure (number of variables in groups of each size
         # defined in the tuples)
         n_var = np.asarray(self.tuple_group_size) * np.asarray(self.tuple_number_of_groups)
         # betas is a list of arrays. Each array is linked to one group size
-        betas = [self.__one_step_compute_betas(n_var, group_size, non_zero_groups, non_zero_coef) for
+        betas = [self._one_step_compute_betas(n_var, group_size, non_zero_groups, non_zero_coef) for
                  n_var, group_size, non_zero_groups, non_zero_coef in
                  zip(n_var, self.tuple_group_size, self.tuple_non_zero_groups, self.tuple_non_zero_coef)]
         # Convert list of arrays into one single array
         betas = np.concatenate(betas, axis=0)
         return betas
 
-    def __compute_predictors(self, group_levels, group_sizes):
+    def _compute_predictors(self, group_levels, group_sizes):
         if self.random_state is not None:
             np.random.seed(self.random_state)
         s = np.zeros((self.n_var, self.n_var))
@@ -180,9 +180,9 @@ class UnequalGroupSize(DataGenerator):
         total_num_groups = int(np.sum(self.tuple_number_of_groups))
         group_levels = np.arange(1, total_num_groups + 1, 1)
         group_sizes = np.repeat(self.tuple_group_size, self.tuple_number_of_groups)
-        betas = self.__compute_betas()
+        betas = self._compute_betas()
         group_index = np.repeat(group_levels, group_sizes)
-        x = self.__compute_predictors(group_levels, group_sizes)
+        x = self._compute_predictors(group_levels, group_sizes)
         error = self._compute_error()
         y = np.dot(x, betas) + error
         data = dict(x=x, y=y, true_beta=betas, group_index=group_index)
