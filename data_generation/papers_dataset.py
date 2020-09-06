@@ -98,7 +98,8 @@ class PaperDataGenerator:
 
     def data_generation(self):
         if self.data_function_name not in self.valid_data_function_names:
-            s = f'Invalid data generation function. Value provided:{self.data_function_name}.\nValid values:{self.valid_data_function_names}'
+            s = f'Invalid data generation function. Value provided:{self.data_function_name}.\n' \
+                f'Valid values:{self.valid_data_function_names}'
             logging.error(s)
             raise ValueError(s)
         data = getattr(self, self.__get_data_function_name())()

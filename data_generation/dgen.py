@@ -68,7 +68,7 @@ class EqualGroupSize(DataGenerator):
         self.group_size = group_size
         self.non_zero_groups = non_zero_groups
         self.non_zero_coef = non_zero_coef
-        self.n_var = self.num_groups * self.group_size
+        self.n_var = None
 
     def __compute_predictors(self, group_levels):
         """
@@ -98,6 +98,7 @@ class EqualGroupSize(DataGenerator):
         return betas
 
     def data_generation(self):
+        self.n_var = self.num_groups * self.group_size
         group_levels = np.arange(1, (self.num_groups + 1), 1)
         group_index = np.repeat(group_levels, self.group_size)
         x = self.__compute_predictors(group_levels)
@@ -135,7 +136,7 @@ class UnequalGroupSize(DataGenerator):
         self.tuple_non_zero_coef = tuple_non_zero_coef
         if len(tuple_number_of_groups) != len(tuple_group_size):
             raise ValueError(f'All the tuples must have the same length')
-        self.n_var = np.sum(np.asarray(tuple_group_size) * np.asarray(tuple_number_of_groups))
+        self.n_var = None
 
     def __one_step_compute_betas(self, n_var, group_size, non_zero_groups, non_zero_coef):
         """
@@ -175,6 +176,7 @@ class UnequalGroupSize(DataGenerator):
         return x
 
     def data_generation(self):
+        self.n_var = np.sum(np.asarray(self.tuple_group_size) * np.asarray(self.tuple_number_of_groups))
         total_num_groups = int(np.sum(self.tuple_number_of_groups))
         group_levels = np.arange(1, total_num_groups + 1, 1)
         group_sizes = np.repeat(self.tuple_group_size, self.tuple_number_of_groups)
@@ -186,5 +188,3 @@ class UnequalGroupSize(DataGenerator):
         data = dict(x=x, y=y, true_beta=betas, group_index=group_index)
         logging.debug('Function finished without errors')
         return data
-
-
